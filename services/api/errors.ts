@@ -898,6 +898,20 @@ export function getAssistantMessageFromError(
       error: 'invalid_request',
     })
   }
+  if (
+    isEnvTruthy(process.env.CLAUDE_CODE_USE_ZEN) &&
+    error instanceof Error &&
+    error.message.toLowerCase().includes('model id')
+  ) {
+    const switchCmd = getIsNonInteractiveSession() ? '--model' : '/model'
+    const fallbackSuggestion = get3PModelFallbackSuggestion(model)
+    return createAssistantAPIErrorMessage({
+      content: fallbackSuggestion
+        ? `${API_ERROR_MESSAGE_PREFIX} (${model}): ${error.message}. Try ${switchCmd} to switch to ${fallbackSuggestion}.`
+        : `${API_ERROR_MESSAGE_PREFIX} (${model}): ${error.message}. Run ${switchCmd} to pick a different model.`,
+      error: 'invalid_request',
+    })
+  }
 
   // 404 Not Found — usually means the selected model doesn't exist or isn't
   // available. Guide the user to /model so they can pick a valid one.
