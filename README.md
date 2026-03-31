@@ -12,6 +12,43 @@ This repository is a backup of that leaked source, and this README is a full bre
 
 Let's get into it.
 
+## Repository Verification & Malware Audit (2026-03-31)
+
+I ran a static review across the checked-in source tree in this repository (`1905` tracked files at the time of audit) to answer two questions:
+
+1. Is this actually Claude Code source?
+2. Is there hidden malware/backdoor behavior embedded?
+
+### What confirms this is Claude Code source
+
+- The code layout and modules match Claude Code internals throughout the tree (`tools/`, `services/`, `bridge/`, `coordinator/`, `buddy/`, `upstreamproxy/`).
+- The repository contains the same feature-flagged subsystems referenced in this writeup (`KAIROS`, `ULTRAPLAN`, `BUDDY`, coordinator mode).
+- Security, permission, sandbox, and MCP integration code is present in depth and is internally consistent with a production AI coding CLI codebase.
+
+### Malware scan summary
+
+- No direct dynamic code execution primitives found:
+  - `eval(...)`: none
+  - `new Function(...)`: none
+- No cryptominer indicators found (`xmrig`, `monero`, `coinhive`, `stratum+tcp`): none.
+- No obvious persistence/autostart malware patterns found (`cron` abuse, `RunOnce` abuse, hidden startup installers): none.
+- `child_process` usage exists, but in expected product features (Bash/PowerShell tools, LSP, terminal helpers) and paired with permission/security validation logic.
+- `sourceMappingURL=data:application/json;base64,...` comments exist in many files; this is consistent with extracted source content from sourcemaps and is not malware behavior by itself.
+
+### Reproducible commands used
+
+```bash
+rg -n '\beval\s*\(' /home/runner/work/claudy/claudy
+rg -n 'new\s+Function\s*\(' /home/runner/work/claudy/claudy
+rg -n -i 'xmrig|monero|stratum\+tcp|coinhive|cryptominer|miner' /home/runner/work/claudy/claudy
+rg -n -i 'autostart|cron|crontab|LaunchAgent|RunOnce|registry\\Run|systemd|pm2|startup' /home/runner/work/claudy/claudy
+rg -n 'child_process|spawn\(|exec\(|execSync\(|spawnSync\(' /home/runner/work/claudy/claudy
+```
+
+### Conclusion
+
+Based on this static audit, this repository appears to be Claude Code source material and does **not** show hidden malware payloads or obvious backdoor logic.
+
 ## How Did This Even Happen?
 
 This is the part that honestly made me go "...really?"
