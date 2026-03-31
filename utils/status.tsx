@@ -244,7 +244,8 @@ export function buildAPIProviderProperties(): Property[] {
     const providerLabel = {
       bedrock: 'AWS Bedrock',
       vertex: 'Google Vertex AI',
-      foundry: 'Microsoft Foundry'
+      foundry: 'Microsoft Foundry',
+      zen: 'OpenCode Zen'
     }[apiProvider];
     properties.push({
       label: 'API provider',
@@ -318,6 +319,12 @@ export function buildAPIProviderProperties(): Property[] {
     if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_FOUNDRY_AUTH)) {
       properties.push({
         value: 'Microsoft Foundry auth skipped'
+      });
+    }
+  } else if (apiProvider === 'zen') {
+    if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_ZEN_AUTH)) {
+      properties.push({
+        value: 'OpenCode Zen auth skipped'
       });
     }
   }
